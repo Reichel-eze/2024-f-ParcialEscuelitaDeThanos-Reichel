@@ -210,3 +210,57 @@ usoLasTresPrimerasGemas guantelete = (utilizar . take 3. gemas) guantelete
 -- al tener un motor de evalucion perezoso (lazy) primero va a entrar en la funcion (es decir, lo que hace, en este caso
 -- el take 3), NO en los parametros, se va a dar cuenta que solo necesita las 3 primeras gemas de la lista infinita. Nunca
 -- va a analizar la lista/estructura completa porque no necesita hacerlo!!
+
+
+
+
+-- FUNCIONES 
+
+head' :: [a] -> a
+head' (cabeza:cola) = cabeza
+
+null' :: [a] -> Bool
+null' [] = True 
+null' (cabeza:cola) = False
+
+-- 5! = 5 * 4!
+factorial :: Number -> Number
+factorial 0 = 1
+factorial n = n * factorial (n - 1)
+
+largo :: [a] -> Number
+largo [] = 0
+largo (x:xs) = 1 + largo xs
+
+ultimo :: [a] -> a
+ultimo [x] = x
+ultimo (x:xs) = ultimo xs
+
+segundo :: [a] -> a
+segundo (x:xs) = head xs
+
+segundo' :: [a] -> a
+segundo' (x:y:ys) = y
+
+any' :: (a -> Bool) -> [a] -> Bool
+any' _ [] = False -- si llega al final de la lista significa que ninguno cumplio
+any' condicion (x:xs) = condicion x || any' condicion xs
+
+all' :: (a -> Bool) -> [a] -> Bool
+all' _ [] = True    -- si llega al final de la lista significa que todos cumplieron
+all' condicion (x:xs) = condicion x && all' condicion xs
+
+--foldl :: (a -> b -> a) -> a -> [b] -> a
+--foldr :: (b -> a -> a) -> a -> [b] -> a
+
+maximum' :: Ord a => [a] -> a
+maximum' (x:xs) = foldl max x xs
+
+maximum'' :: Ord a => [a] -> a
+maximum'' = foldl1 max 
+
+enterosDesde :: Number -> [Number]
+enterosDesde n = n : enterosDesde(n+1)
+
+enterosDesde' :: Number -> [Number]
+enterosDesde' n = [n..]
