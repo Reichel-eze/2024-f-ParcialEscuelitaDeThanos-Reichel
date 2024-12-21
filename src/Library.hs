@@ -143,3 +143,70 @@ reducirEdadALaMitad personaje = personaje {edad = max 18 (edad personaje `div` 2
 
 gemaLoca :: Gema -> Gema 
 gemaLoca gema = gema . gema 
+
+-- Punto 4: (1 punto) Dar un ejemplo de un guantelete de goma con las gemas tiempo, alma que quita la habilidad 
+-- de “usar Mjolnir” y la gema loca que manipula el poder del alma tratando de eliminar la “programación en Haskell”.
+
+guanteleDeGoma :: Guantelete
+guanteleDeGoma = UnGuantelete "goma" [tiempo, alma "usar Mjolnir", gemaLoca (alma "programacion en Haskell")]
+
+-- Punto 5: (2 puntos). No se puede utilizar recursividad. Generar la función utilizar  
+-- que dado una lista de gemas y un enemigo ejecuta el poder de cada una de las gemas que lo componen 
+-- contra el personaje dado. Indicar cómo se produce el “efecto de lado” sobre la víctima.
+
+utilizar :: [Gema] -> Personaje -> Personaje
+utilizar gemas personaje = foldr aplicarGema personaje gemas
+
+aplicarGema :: Gema -> Personaje -> Personaje
+aplicarGema gema = gema 
+
+-- Punto 6: (2 puntos). Resolver utilizando recursividad. Definir la función gemaMasPoderosa que dado un guantelete 
+-- y una persona obtiene la gema del infinito que produce la pérdida más grande de energía sobre la víctima. 
+
+gemaMasPoderosaV2 :: Guantelete -> Personaje -> Gema
+gemaMasPoderosaV2 guantelete personaje = foldl1 (mayorPerdidaDeEnergiaV2 personaje) (gemas guantelete)
+
+mayorPerdidaDeEnergiaV2 :: Personaje -> Gema -> Gema -> Gema
+mayorPerdidaDeEnergiaV2 personaje gema1 gema2
+    | (energia . gema1) personaje < (energia . gema2) personaje = gema1
+    | otherwise                                                 = gema2
+
+gemaMasPoderosa :: Guantelete -> Personaje -> Gema
+gemaMasPoderosa guantelete personaje = mayorPerdidaDeEnergia personaje (gemas guantelete)
+
+mayorPerdidaDeEnergia :: Personaje -> [Gema] -> Gema
+mayorPerdidaDeEnergia _ [gema] = gema -- cuando es la unica que quedo (CASO BASE Y DE CORTE)
+mayorPerdidaDeEnergia personaje (gema1:gema2:gemas)
+    | (energia . gema1) personaje < (energia . gema2) personaje = mayorPerdidaDeEnergia personaje (gema1:gemas)
+    | otherwise                                                 = mayorPerdidaDeEnergia personaje (gema2:gemas)
+
+-- Punto 7: (1 punto) Dada la función generadora de gemas y un guantelete de locos:
+infinitasGemas :: Gema -> [Gema]
+infinitasGemas gema = gema:(infinitasGemas gema)
+
+guanteleteDeLocos :: Guantelete
+guanteleteDeLocos = UnGuantelete "vesconite" (infinitasGemas tiempo)
+
+--Y la función 
+usoLasTresPrimerasGemas :: Guantelete -> Personaje -> Personaje
+usoLasTresPrimerasGemas guantelete = (utilizar . take 3. gemas) guantelete
+
+--Justifique si se puede ejecutar, relacionándolo con conceptos vistos en la cursada:
+-- ejemplo1 = gemaMasPoderosa ironMan guanteleteDeLocos
+
+-- No se podria llegar a un resultado porque como gemaMasPoderosa tiene que evaluar/comparar cada una de las gemas de 
+-- la lista del guanteleteDeLocos para llegar a un conclusion de quien es la gema mas poderosa. Entonces al ser una 
+-- lista infinita dicha recursividad no se detendria nunca porque en ningun momento me quedaria sin gemas que evaluar. 
+
+-- ejemplo2 = usoLasTresPrimerasGemas guanteleteDeLocos ironMan
+
+-- Este ejemplo si se prodia ejecutar porque simplemente agarra las primeras 3 gemas del guanteleteDeLocos y luego
+-- se utiliza sobre el personaje (ejecuta el poder de cada una de las gemas sobre el personaje), devolviendome
+-- al personaje luego de ser afectado por cada una de las gemas. Esto es posible gracias a la evaluacion perezosa (lazy
+-- evaluation) con la cual trabaja Haskell que me permite realizar calculos/operar con listas infinitas sin la necesidad de
+-- analizar todos los valores de la misma, permitiendo la obtencion de un resultado en este caso
+
+-- Esta funcion si podria ejecutarse dado que aunque la lista sea infinita, no se la requiere en su completitud. Haskell al
+-- al tener un motor de evalucion perezoso (lazy) primero va a entrar en la funcion (es decir, lo que hace, en este caso
+-- el take 3), NO en los parametros, se va a dar cuenta que solo necesita las 3 primeras gemas de la lista infinita. Nunca
+-- va a analizar la lista/estructura completa porque no necesita hacerlo!!
